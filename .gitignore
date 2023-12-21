@@ -11,3 +11,8 @@ cmake*
 idea.pptx
 ~*
 maps
+.cache
+build
+sipp_demo
+lifelong
+compile_commands.json

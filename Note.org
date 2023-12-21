@@ -1,0 +1,46 @@
+#+TITLE: 笔记
+
+
+* 地图格式
+** .map
+纯文本文档。第一行有两个数字，表示行数和列数
+[[./maps/kiva.map::1]]
+[[./src/KivaGraph.cpp::112]]
+第二行：endpoint数量
+第三行：agent_num
+第四行：maxtime
+
+下面的字符表示地图点的类别：
+- =r= 机器人休息点
+- =e= endpoint
+- =.= 可以通过的点
+- =@= 障碍物
+* 数据结构
+格点地图的坐标，i,j，在代码中转化成 i*cols + j 存储
+从上往下，从左往右
+=State= 中的location
+=goal_location= 中的first
+* KivaGrid::preprocessing
+[[./src/KivaGraph.cpp::187]]
+先尝试从文件中读取，尝试读取文件
+- {map_name}_rotation_heuristics_table.txt
+- {map_name}_heuristics_table.txt
+读取成功，就调用 =load_heuristics_table=
+读不到，或者加载失败，就计算。
+对home和endpoint，调用 =BasicGraph::compute_heuristics= 计算
+[[./src/BasicGraph.cpp::169]]
+算完之后存到文件中
+* PBS::generate_root_node
+[[./src/PBS.cpp::450]]
+** 变量：
+*** dummy_start: 空的PBSNode
+*** screen
+todo
+*** initial_paths
+[[./src/PBS.cpp::462]]
+[[./inc/MAPFSolver.h::24]]
+[[./src/BasicSystem.cpp::209]]
+通过update_initial_paths更新，但是没有地方调用这个函数
+*** paths
+* SIPP::run
+** start的timestep不能是-1,会导致越界访问
