@@ -1,6 +1,6 @@
 project(lifelong)
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.14)
 set(CMAKE_CXX_STANDARD 11)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -50,7 +50,5 @@ target_link_libraries(lifelong ${Boost_LIBRARIES})
 
 add_executable(sipp_demo ${RHCR_SRCS} ${SIPP_DEMO_DRIVER_SRCS})
 target_link_libraries(sipp_demo ${Boost_LIBRARIES})
-target_compile_options(sipp_demo PRIVATE "-O2")
-target_compile_options(sipp_demo PRIVATE "-g")
-target_compile_options(sipp_demo PRIVATE "-fsanitize=address")
-target_link_options(sipp_demo PRIVATE "-fsanitize=address")
+target_compile_options(sipp_demo PRIVATE -O2 -g -fsanitize=address -fsanitize=undefined)
+target_link_options(sipp_demo PRIVATE -fsanitize=address -fsanitize=undefined)

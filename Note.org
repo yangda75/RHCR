@@ -43,4 +43,73 @@ todo
 通过update_initial_paths更新，但是没有地方调用这个函数
 *** paths
 * SIPP::run
+流程：
+1. 构造初始节点，放入open和focal
+2. 在focal非空时，执行下列逻辑：
+   - 将focal_list的堆顶节点出队，并且从open_list中删除对应节点
+   - 判断当前节点是否是目标，如果是，调用 updatePath 生成路线，结束
+   - 对四个方向，生成新的节点，对所有的安全时间窗，都生成一个节点
+     扩展的节点数量 sum(IntervalCount(Direction))
+   - 根据open_list中的f value 更新focal_bound，将大于原先focalbound且小于当前
+     focalbound的节点加入focal_list
+
 ** start的timestep不能是-1,会导致越界访问
+** FOCAL
+[[./inc/SIPP.h::24]]
+1. 比较 =conflicts= ，小的好
+2. 比较 =g_val+h_val= ，小的好
+3. 比较 =g_val= ，大的好
+** conflicts
+[[./src/SIPP.cpp::258]]
+interval中最多有一个，加上当前节点已经有的，就是新节点的conflict
+用于pbs的 [[./src/ReservationTable.cpp::243][ReservationTable::build]]
+首先调用 insertPath2CT 将高优先级的机器人作为"hard conflicts"加入 ct
+[[./src/SIPP.cpp::252]]
+然后调用 insertPath2CAT 将其他机器人的路线作为 "soft conflicts" 加入 cat
+[[./src/SIPP.cpp::272]]
+** 节点生成
+1. [[./src/ReservationTable.cpp::405][RT::getSafeIntervals(from,to,lb,ub)]]
+   先计算to节点和 from,to 边的安全窗口
+   然后取交集
+2. 计算点的安全窗口
+   updateSIT(location)
+   返回满足lb,ub的窗口列表
+3. 计算边的安全窗口
+   updateSIT(location)
+   返回满足lb,ub的窗口列表
+4. updateSIT
+   如果sit中有这个点/边，就结束
+   如果有ct，对ct中的每个时间段，调用insertConstraint2SIT
+   调用对cat，执行insertSoftConstraint2SIT，这一步后，是否需要调用mergeInterval?
+5. insertConstraint2SIT(location, tmin, tmax)
+   所有更新/修改的interval，coflict都为false，即硬冲突
+   如果sit[location] 为空,加入[0,tmin),[tmax,inf)，结束
+   对sit[location]中的所有时间窗 i:
+   - tmin >= imax，跳过
+   - tmax <= imin,结束
+   - imin < tmin && imax <= tmax, 更新 i = [imin,tmin)，继续
+   - tmin <= imin && tmax < imax, 更新 i = [tmax,imax)，结束
+   - imin < tmin && tmax < imax, 插入 [imin, tmin), 更新 i = [tmax, imax)，结束
+   - 否则，即 tmin <= imin && tmax >= imax，删除i
+6. insertSoftConstraint2SIT(locaton, tmin, tmax)
+   如果sit[location]为空，加入[0,tmin,false), [tmin,tmax,true), [tmax,inf,false)，结束
+   对sit[location]中的所有时间窗 i:
+   - tmin >= imax 跳过
+   - tmax <= imin 结束
+   - i.conflict，跳过
+   - imin < tmin && imax < tmax, 插入[imin, tmin, false), 更新i=[tmin, imax, true)
+   - tmin <= imin && tmax < imax, 插入[imin, tmax, true), 更新i[tmax, imax, false)
+   - imin < tmin && tmax < imax,插入[imin, tmin, false), [tmin, tmax, true), i=[tmax, imax,false)
+   - 否则，即 tmin <= imin && tmax >= imax, i=[imin,imax, true)
+
+* sipp_demo 流程
+1. 读取地图：
+   - KivaGrid::load
+   - KivaGrid::preprocessing 计算启发
+2. 构造 ReservationTable, 设置参数
+3. 计算高优先级的机器人路线
+   - rt.clear
+   - rt.build
+   - sipp.run
+   - paths[i] = path
+4. 计算低优先级的机器人路线
