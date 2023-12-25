@@ -114,8 +114,8 @@ Path SIPP::run(const BasicGraph &G, const State &start,
         rt.getHoldingTimeFromSIT(goal_location.back().first);
   while (!focal_list.empty()) {
     SIPPNode *curr = focal_list.top();
-    std::cout << "curr: location:" << curr->state.location << " = "
-              << printLocation(G, curr->state.location) << "\n";
+    // std::cout << "curr: location:" << curr->state.location << " = "
+              // << printLocation(G, curr->state.location) << "\n";
     focal_list.pop();
     open_list.erase(curr->open_handle);
     curr->in_openlist = false;

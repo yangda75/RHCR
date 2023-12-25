@@ -40,6 +40,7 @@ set(RHCR_SRCS
 
 set(DRIVER_SRCS src/driver.cpp)
 set(SIPP_DEMO_DRIVER_SRCS src/sipp_demo.cpp)
+set(PBS_DEMO_DRIVER_SRCS src/pbs_demo.cpp)
 
 # Find Boost
 find_package(Boost 1.49.0 REQUIRED COMPONENTS program_options system filesystem)
@@ -52,3 +53,8 @@ add_executable(sipp_demo ${RHCR_SRCS} ${SIPP_DEMO_DRIVER_SRCS})
 target_link_libraries(sipp_demo ${Boost_LIBRARIES})
 target_compile_options(sipp_demo PRIVATE -O2 -g -fsanitize=address -fsanitize=undefined)
 target_link_options(sipp_demo PRIVATE -fsanitize=address -fsanitize=undefined)
+
+add_executable(pbs_demo ${RHCR_SRCS} ${PBS_DEMO_DRIVER_SRCS})
+target_link_libraries(pbs_demo ${Boost_LIBRARIES})
+target_compile_options(pbs_demo PRIVATE -O2 -g -fsanitize=address -fsanitize=undefined)
+target_link_options(pbs_demo PRIVATE -fsanitize=address -fsanitize=undefined)
